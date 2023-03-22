@@ -164,7 +164,7 @@ wrist.set(ControlMode.PercentOutput, output); // set the wrist motor to the outp
 
 // Toggle intake solenoids based on operator input
 boolean toggle = false;
-if (_operator.getAButton()) {
+if (_operator.getYButton()) {
   if (toggle == false) {
     toggle = true;
   } else {
@@ -181,16 +181,16 @@ if(toggle == true){
 }
 
 // Control intake motors based on operator input
-if (_operator.getRightBumper()) {
+if (_operator.getRightStickButton()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, .2);
   intake_robin.set(TalonFXControlMode.PercentOutput, -.2);
-} else if (_operator.getLeftBumper()) {
+} else if (_operator.getLeftStickButton()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, -.5);
   intake_robin.set(TalonFXControlMode.PercentOutput, .5);
-} else if (_operator.getStartButton()) {
+} else if (_operator.getRightBumper()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, -1);
   intake_robin.set(TalonFXControlMode.PercentOutput, 1);
-} else if (_operator.getBackButton()) {
+} else if (_operator.getLeftBumper()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, .2);
   intake_robin.set(TalonFXControlMode.PercentOutput, -.2);
 } else {
@@ -198,21 +198,22 @@ if (_operator.getRightBumper()) {
   intake_robin.set(TalonFXControlMode.PercentOutput, 0);
 }
 
-// Control wrist motor based on operator input
-if (_operator.getLeftTriggerAxis() > 0) {
-  wrist.set(ControlMode.PercentOutput, _operator.getLeftTriggerAxis() / 4);
-} else if (_operator.getRightTriggerAxis() > 0) {
-  wrist.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis() / 4);
-} else {
-  wrist.set(ControlMode.Position, wrist.getSelectedSensorPosition() + 20);
-}
+wrist.set(TalonFXControlMode.PercentOutput, _operator.getRightY());
+elevator_crude.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(5) / 3);
 
+// Control wrist motor based on operator input
 // Set elevator motor based on operator input, with limit switch protection
 if (bottomlimit.get()) {
-  elevator_crude.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(5) / 3);
+  if (_operator.getLeftTriggerAxis() > 0) {
+    _gearbox.set(ControlMode.PercentOutput, _operator.getLeftTriggerAxis() / 4);
+  } else if (_operator.getRightTriggerAxis() > 0) {
+    _gearbox.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis() / 4);
+  } else {
+    _gearbox.set(ControlMode.Position, _gearbox.getSelectedSensorPosition() + 20);
+  }
 } else {
-  elevator_crude.setSelectedSensorPosition(0);
-  elevator_crude.set(TalonFXControlMode.PercentOutput,-.1 + (- (_operator.getRawAxis(5) / 3)));
+  _gearbox.setSelectedSensorPosition(0);
+  _gearbox.set(TalonFXControlMode.PercentOutput,-.1);
 }
 
 // Set LED pattern based on color sensor input
@@ -231,7 +232,7 @@ SmartDashboard.putNumber("Green", detectedColor.green);
 SmartDashboard.putNumber("Blue", detectedColor.blue);
 SmartDashboard.putNumber("armduty", armabsolute.getDistance());
 SmartDashboard.putNumber("gearduty", gearabsolute.getDistance());
-SmartDashboard.putNumber("Wrist", wrist.getSelectedSensorPosition());
+                                 
 }
 
 @Override

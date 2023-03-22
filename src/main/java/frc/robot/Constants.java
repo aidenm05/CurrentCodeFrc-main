@@ -34,7 +34,7 @@ public static final int blinkinLEDPort = 6;
  // Other Constants
 public static final double unitsPerRevolution = 360.0;
 //need to add shufflebaord constant editing
-  public static final boolean mantis = false;
+  public static final boolean mantis = true;
   public static final double LIMELIGHT_DEADBAND = 0.005;
   public static final double MIN_STEER_K = 0.05;
   // elevator constants

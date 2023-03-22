@@ -51,18 +51,18 @@ public class RobotContainer {
 
   public final GenericHID driverXbox = new GenericHID(0);
   // private final GenericHID conOperator = new GenericHID(2);
-  public final GenericHID operator = new GenericHID(1);
+  public final GenericHID operator = new GenericHID(Constants.operatorControllerPort);
 
   private static AprilTagFieldLayout aprilTagField = null;
-  private final JoystickButton yButton1 = new JoystickButton(operator,XboxController.Button.kY.value);
+ // private final JoystickButton yButton1 = new JoystickButton(operator,XboxController.Button.kY.value);
   private final JoystickButton aButton1 = new JoystickButton(operator,XboxController.Button.kA.value);
   private final JoystickButton bButton1 = new JoystickButton(operator,XboxController.Button.kB.value);
   private final JoystickButton xButton1 = new JoystickButton(operator,XboxController.Button.kX.value);
   private final JoystickButton leftStickButton1 = new JoystickButton(operator,XboxController.Button.kLeftStick.value);
-  private final JoystickButton rightStickButton1 = new JoystickButton(operator,XboxController.Button.kRightStick.value);
-  private final JoystickButton start = new JoystickButton(operator,XboxController.Button.kStart.value);
+  //private final JoystickButton rightStickButton1 = new JoystickButton(operator,XboxController.Button.kRightStick.value);
+ // private final JoystickButton start = new JoystickButton(operator,XboxController.Button.kStart.value);
   private final JoystickButton leftBumper1 = new JoystickButton( operator,XboxController.Button.kLeftBumper.value);
-  private final JoystickButton back = new JoystickButton(operator,XboxController.Button.kBack.value);
+ // private final JoystickButton back = new JoystickButton(operator,XboxController.Button.kBack.value);
   private final JoystickButton rightBumper1 = new JoystickButton( operator,XboxController.Button.kRightBumper.value);
   private final POVButton b7 = new POVButton(operator, 0);
   private final POVButton b8 = new POVButton(operator, 90);
@@ -124,36 +124,16 @@ public class RobotContainer {
             Constants.elevatorFloor,
            Constants.shoulderFloor
           ));
-
-    bButton1.onTrue(m_Elevator.setStow());
+                       
 
     // Elevator shoulder Presets
     xButton1.onTrue(
         m_Elevator.sequentialSetPositions(
             Constants.elevatorTopCone,
-            Constants.shoulderTopCone
+            Constants.shoulderTopCone                                   
             ));
-    yButton1.onTrue(
-        m_Elevator.sequentialSetPositions(
-            Constants.elevatorMidCone,
-            Constants.shoulderMidCone
-            ));
-    start.onTrue(
-        m_Elevator.sequentialSetPositions(
-            Constants.elevatorTopCube,
-            Constants.shoulderTopCube
-            ));
-    back.onTrue(
-        m_Elevator.sequentialSetPositions(
-            Constants.elevatorMidCube,
-            Constants.shoulderMidCube
-            ));
-    rightStickButton1.onTrue(
-        m_Elevator.sequentialSetPositions(
-            Constants.elevatorShelf,
-            Constants.shoulderShelf
-            ));
-    //b7.whileTrue(m_Elevator.shoulderUp());
+                                                                             
+    b7.whileTrue(m_Elevator.shoulderUp());
     //b8.whileTrue(m_Elevator.shoulderDown());
     b9.whileTrue(m_Elevator.runUp());
     b10.whileTrue(m_Elevator.runDown());
@@ -189,7 +169,7 @@ public class RobotContainer {
     // new JoystickButton(driverXbox, 3).onTrue(new
     // InstantCommand(drivebase::addFakeVisionReading));
 
-    new JoystickButton(driverXbox, 4).onTrue(driveToAprilTag(drivebase, 4,
+    new JoystickButton(driverXbox, 99).onTrue(driveToAprilTag(drivebase, 4,
     Rotation2d.fromDegrees(0),
     Rotation2d.fromDegrees(0), new Translation2d(Units.inchesToMeters(-36), 0)));
 
