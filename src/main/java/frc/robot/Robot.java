@@ -134,15 +134,15 @@ robsolenoid.set(true);
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-  
+  wrist.setSelectedSensorPosition(0);
 // Set wrist neutral mode to brake and reset absolute encoders
 wrist.setNeutralMode(NeutralMode.Brake);
 armabsolute.reset();
 armabsolute.getPositionOffset();
 armabsolute.setPositionOffset(0);
 gearabsolute.reset();
-gearabsolute.getPositionOffset();
-gearabsolute.setPositionOffset(0);
+//gearabsolute.getPositionOffset();
+//gearabsolute.setPositionOffset(0);
 
 }
 
@@ -150,11 +150,7 @@ gearabsolute.setPositionOffset(0);
 public void teleopPeriodic() {
 // Move arm to target position based on operator input
 double targetPositionDegrees = 0;
-if (_operator.getStartButton()) {
-    targetPositionDegrees = 0; // set target position to 0 degrees for the towed configuration
-} else if (_operator.getBackButton()) {
-    targetPositionDegrees = 45; // set target position to 45 degrees for the extended configuration
-}
+
 armabsolute.setDistancePerRotation(360.0); // set the distance per rotation to 360 degrees
 double targetPositionEncoderUnits = targetPositionDegrees / armabsolute.getDistancePerRotation(); // convert the target position from degrees to encoder units
 double kP = 0.1; // proportional gain
@@ -167,7 +163,7 @@ boolean toggle = false;
 if (_operator.getYButton()) {
   if (toggle == false) {
     toggle = true;
-  } else {
+  } else if (_operator.getYButton()) {
     toggle = false;
   }
 }
@@ -198,24 +194,24 @@ if (_operator.getRightStickButton()) {
   intake_robin.set(TalonFXControlMode.PercentOutput, 0);
 }
 
-wrist.set(TalonFXControlMode.PercentOutput, _operator.getRightY());
-elevator_crude.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(5) / 3);
 
 // Control wrist motor based on operator input
 // Set elevator motor based on operator input, with limit switch protection
 if (bottomlimit.get()) {
-  if (_operator.getLeftTriggerAxis() > 0) {
-    _gearbox.set(ControlMode.PercentOutput, _operator.getLeftTriggerAxis() / 4);
-  } else if (_operator.getRightTriggerAxis() > 0) {
-    _gearbox.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis() / 4);
-  } else {
-    _gearbox.set(ControlMode.Position, _gearbox.getSelectedSensorPosition() + 20);
+ if (!( _operator.getRawAxis(5) == 0))
+  elevator_crude.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(5) / 3);
+  else{  elevator_crude.set(TalonFXControlMode.PercentOutput,.3);
   }
 } else {
-  _gearbox.setSelectedSensorPosition(0);
-  _gearbox.set(TalonFXControlMode.PercentOutput,-.1);
+  elevator_crude.setSelectedSensorPosition(0);
+  elevator_crude.set(TalonFXControlMode.PercentOutput,-.2);
 }
-
+if (_operator.getLeftTriggerAxis() > 0.1) {
+  _gearbox.set(ControlMode.PercentOutput, _operator.getLeftTriggerAxis());
+} else if (_operator.getRightTriggerAxis() > 0.1) {
+  _gearbox.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis());
+} else{  _gearbox.set(ControlMode.PercentOutput,0);
+}
 // Set LED pattern based on color sensor input
 Color detectedColor = m_colorSensor.getColor();
 if (detectedColor.blue > .3) {
@@ -225,6 +221,20 @@ if (detectedColor.blue > .3) {
 } else {
   SN_Blinkin.setPattern(PatternType.HotPink);
 }
+
+if (_operator.getStartButtonPressed() && armabsolute.getDistance() > 10 ){
+  wrist.set(ControlMode.PercentOutput, .05);
+} else if ( armabsolute.getDistance() < 15 ){
+  wrist.set(ControlMode.PercentOutput, -.2);
+}
+// else if ( armabsolute.getDistance() > targetvari ){
+//   wrist.set(ControlMode.PercentOutput, .05);
+// }
+//  else if (armabsolute.getDistance() < targetvari ) {
+//   wrist.set(ControlMode.PercentOutput, -.05);
+// }
+wrist.set(ControlMode.PercentOutput,_operator.getRawAxis(1)/2);
+
 
 // Display sensor values on SmartDashboard
 SmartDashboard.putNumber("Red", detectedColor.red);

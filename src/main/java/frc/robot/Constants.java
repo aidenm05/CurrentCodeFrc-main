@@ -15,7 +15,7 @@ import swervelib.parser.PIDFConfig;
 public final class Constants {
 // Talon IDs
 public static final int elevatorCrudeTalonID = 4;
-public static final int gearboxTalonID = 16;
+public static final int gearboxTalonID = 18;
 public static final int wristTalonID = 24;
 public static final int intakeBatmanTalonID = 23;
 public static final int intakeRobinTalonID = 20;
@@ -50,7 +50,7 @@ public static final double unitsPerRevolution = 360.0;
   public static final int elevatorFloor = 21477;
   public static final int elevatorShelf = 91340;
   // shoulder constants
-  public static final int shoulderUpperLimit = 1400; // DO NOT TOUCH
+  public static final int shoulderUpperLimit = 633840; // DO NOT TOUCH
   // this is used to set a threshold of where the elevator postion needs to be
   public static final int shoulderLowerThreshold = 800;
   // set height for shoulder pos 1

@@ -32,7 +32,7 @@ public class Elevator extends SubsystemBase {
   public double motorPosition;
   public int smoothing = 0;
   int upTargetPos = 10000;
-  int downTargetPosition = 100;
+  int downTargetPosition = 1000;
   int count = 0;
   public WPI_TalonFX shoulderMotor;
 
@@ -166,7 +166,7 @@ mainMotor.configSelectedFeedbackSensor(
   public CommandBase shoulderdown() {
     return run(() -> shoulderMotor.set(TalonFXControlMode.PercentOutput, -0.1))
       .finallyDo(interrupted ->
-        shoulderMotor.set(ControlMode.PercentOutput, (-0.1))
+        shoulderMotor.set(ControlMode.PercentOutput, (-1))
       )
       .withName("shoulderdown");
   }
@@ -174,7 +174,7 @@ mainMotor.configSelectedFeedbackSensor(
   public CommandBase shoulderUp() {
     return run(() -> shoulderMotor.set(TalonFXControlMode.PercentOutput, 0.1))
       .finallyDo(interrupted ->
-        shoulderMotor.set(ControlMode.PercentOutput, (-0.1))
+        shoulderMotor.set(ControlMode.PercentOutput, (-1))
       )
       .withName("shoulderUp");
   }

@@ -120,9 +120,8 @@ public class RobotContainer {
  //  AButton.whileTrue(new RepeatCommand(new InstantCommand(drivebase::lock, drivebase)));
 
     aButton1.onTrue(
-        m_Elevator.sequentialSetPositions(
-            Constants.elevatorFloor,
-           Constants.shoulderFloor
+        m_Elevator.sequentialSetPositions(-9388,
+           633840
           ));
                        
 
@@ -134,7 +133,7 @@ public class RobotContainer {
             ));
                                                                              
     b7.whileTrue(m_Elevator.shoulderUp());
-    //b8.whileTrue(m_Elevator.shoulderDown());
+    b8.whileTrue(m_Elevator.shoulderdown());
     b9.whileTrue(m_Elevator.runUp());
     b10.whileTrue(m_Elevator.runDown());
 
