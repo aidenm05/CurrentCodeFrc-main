@@ -16,7 +16,7 @@ public final class Constants {
 // Talon IDs
 public static final int elevatorCrudeTalonID = 4;
 public static final int gearboxTalonID = 18;
-public static final int wristTalonID = 24;
+public static final int wristTalonID = 19;
 public static final int intakeBatmanTalonID = 23;
 public static final int intakeRobinTalonID = 20;
 // Controller Ports

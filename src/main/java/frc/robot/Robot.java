@@ -7,8 +7,10 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.pathplanner.lib.server.PathPlannerServer;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
 
 import edu.wpi.first.cameraserver.CameraServer;
@@ -25,10 +27,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
+import com.revrobotics.REVLibError;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.frcteam3255.components.SN_Blinkin;
 import com.frcteam3255.components.SN_Blinkin.PatternType;
-
+import com.revrobotics.CANSparkMax;
 public class Robot extends TimedRobot {
   private static final double kUnitsPerRevolution = Constants.unitsPerRevolution;
   public Command m_autonomousCommand;
@@ -51,7 +54,7 @@ public class Robot extends TimedRobot {
   public static final DutyCycleEncoder armabsolute = new DutyCycleEncoder(Constants.armAbsoluteEncoderPort);
   public static final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
   public static final SN_Blinkin SN_Blinkin = new SN_Blinkin(Constants.blinkinLEDPort); 
-
+//public static final CANSparkMax second  = new CANSparkMax(Constants.intakeBatmanTalonID, MotorType.kBrushed);
   @Override
   public void robotInit() {
     // Initialize motor controllers and sensors
@@ -62,11 +65,34 @@ public class Robot extends TimedRobot {
     intake_robin.clearStickyFaults();
     _gearbox.clearStickyFaults();
     elevator_crude.clearStickyFaults();
-
+    //second.clearStickyFaults();
+    wrist.configNominalOutputForward(0, Constants.kTimeoutMs);
+    wrist.configNominalOutputReverse(0, Constants.kTimeoutMs);
+    wrist.configPeakOutputForward(1, Constants.kTimeoutMs);
+    wrist.configPeakOutputReverse(-1, Constants.kTimeoutMs);
+    wrist.config_kF(Constants.kSlotIdx0, 0.02, Constants.kTimeoutMs);
+    wrist.config_kP(Constants.kSlotIdx0, 0, Constants.kTimeoutMs);
+    wrist.config_kI(Constants.kSlotIdx0, 0, Constants.kTimeoutMs);
+    wrist.config_kD(Constants.kSlotIdx0, 0, Constants.kTimeoutMs);
+    wrist.config_IntegralZone(Constants.kSlotIdx0, 200);
+    wrist.configAllowableClosedloopError(Constants.kSlotIdx0, 400);
     // Set up camera server
     CameraServer.startAutomaticCapture("driver_camera", 0);
+    wrist.configSelectedFeedbackSensor(
+      TalonFXFeedbackDevice.IntegratedSensor,
+      0,
+      30
+    );
+    wrist.setInverted(TalonFXInvertType.Clockwise);
+    wrist.setNeutralMode(NeutralMode.Brake);
+    wrist.configNeutralDeadband(0.001);
+    wrist.setStatusFramePeriod(
+      StatusFrameEnhanced.Status_13_Base_PIDF0,
+      10,
+      Constants.kTimeoutMs
+    );
 
-    // Set up encoders
+    // Set up rev encoders
     armabsolute.setDistancePerRotation(360.0);
     gearabsolute.setDistancePerRotation(360.0);
 
@@ -80,7 +106,6 @@ public class Robot extends TimedRobot {
     intake_robin.setNeutralMode(NeutralMode.Brake);
     elevator_crude.setNeutralMode(NeutralMode.Brake);
     _gearbox.setNeutralMode(NeutralMode.Brake);
-    wrist.configFactoryDefault();
     intake_batman.configFactoryDefault();
     intake_robin.configFactoryDefault();
     elevator_crude.configFactoryDefault();
@@ -163,7 +188,7 @@ boolean toggle = false;
 if (_operator.getYButton()) {
   if (toggle == false) {
     toggle = true;
-  } else if (_operator.getYButton()) {
+  } else if (_operator.getYButtonPressed()) {
     toggle = false;
   }
 }
@@ -175,23 +200,35 @@ if(toggle == true){
   batsolenoid.set(false);
   robsolenoid.set(true);
 }
+if (_operator.getXButton()) {
+  batsolenoid.set(true);
+  robsolenoid.set(false);
+  } else if (_operator.getAButton()) {
+    batsolenoid.set(false);
+    robsolenoid.set(true);
+  }
 
 // Control intake motors based on operator input
-if (_operator.getRightStickButton()) {
+if (_operator.getBackButton()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, .2);
   intake_robin.set(TalonFXControlMode.PercentOutput, -.2);
-} else if (_operator.getLeftStickButton()) {
+ // second.set(-0.2);
+} else if (_operator.getStartButton()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, -.5);
   intake_robin.set(TalonFXControlMode.PercentOutput, .5);
+   // second.set(0.2);
 } else if (_operator.getRightBumper()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, -1);
   intake_robin.set(TalonFXControlMode.PercentOutput, 1);
+   // second.set(-1);
 } else if (_operator.getLeftBumper()) {
   intake_batman.set(TalonFXControlMode.PercentOutput, .2);
   intake_robin.set(TalonFXControlMode.PercentOutput, -.2);
+     // second.set(1);
 } else {
   intake_batman.set(TalonFXControlMode.PercentOutput, 0);
   intake_robin.set(TalonFXControlMode.PercentOutput, 0);
+     // second.set(0);
 }
 
 
@@ -212,36 +249,45 @@ if (_operator.getLeftTriggerAxis() > 0.1) {
   _gearbox.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis());
 } else{  _gearbox.set(ControlMode.PercentOutput,0);
 }
+
+//if(((detectedColor.red > 0.30) && (detectedColor.red < 0.40)) || ((detectedColor.blue > 0.30) && (detectedColor.blue < 0.50))){
+
 // Set LED pattern based on color sensor input
 Color detectedColor = m_colorSensor.getColor();
 if (detectedColor.blue > .3) {
   SN_Blinkin.setPattern(PatternType.BPMPartyPalette);
 } else if (detectedColor.blue > .32 && detectedColor.red <= 0.35) {
-  SN_Blinkin.setPattern(PatternType.EndToEndBlendToBlackC2P);
+  SN_Blinkin.setPattern(PatternType.BPMLavaPalette);
+  toggle = true;
 } else {
   SN_Blinkin.setPattern(PatternType.HotPink);
 }
 
-if (_operator.getStartButtonPressed() && armabsolute.getDistance() > 10 ){
-  wrist.set(ControlMode.PercentOutput, .05);
-} else if ( armabsolute.getDistance() < 15 ){
-  wrist.set(ControlMode.PercentOutput, -.2);
-}
+// if (_operator.getStartButtonPressed() && armabsolute.getDistance() > 10 ){
+//   wrist.set(ControlMode.PercentOutput, .05);
+// } else if ( armabsolute.getDistance() < 15 ){
+//   wrist.set(ControlMode.PercentOutput, -.2);
+//}
 // else if ( armabsolute.getDistance() > targetvari ){
 //   wrist.set(ControlMode.PercentOutput, .05);
 // }
 //  else if (armabsolute.getDistance() < targetvari ) {
 //   wrist.set(ControlMode.PercentOutput, -.05);
 // }
-wrist.set(ControlMode.PercentOutput,_operator.getRawAxis(1)/2);
 
+wrist.set(ControlMode.PercentOutput,_operator.getRawAxis(1)/2);
+  if (!( _operator.getRawAxis(1) == 0))
+   wrist.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(1) / 2);
+  else {
+   elevator_crude.set(TalonFXControlMode.Position,elevator_crude.getSelectedSensorPosition(0));
+ 
 
 // Display sensor values on SmartDashboard
 SmartDashboard.putNumber("Red", detectedColor.red);
 SmartDashboard.putNumber("Green", detectedColor.green);
 SmartDashboard.putNumber("Blue", detectedColor.blue);
 SmartDashboard.putNumber("armduty", armabsolute.getDistance());
-SmartDashboard.putNumber("gearduty", gearabsolute.getDistance());
+SmartDashboard.putNumber("gearduty", gearabsolute.getDistance());}
                                  
 }
 
