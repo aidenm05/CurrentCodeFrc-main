@@ -11,34 +11,34 @@ import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
 import swervelib.parser.PIDFConfig;
 
-
 public final class Constants {
-// Talon IDs
-public static final int elevatorCrudeTalonID = 4;
-public static final int gearboxTalonID = 18;
-public static final int wristTalonID = 19;
-public static final int intakeBatmanTalonID = 23;
-public static final int intakeRobinTalonID = 20;
-// Controller Ports
-public static final int operatorControllerPort = 2;
-// Sensor Ports
-public static final int bottomLimitSwitchPort = 0;
-public static final int gearAbsoluteEncoderPort = 1;
-public static final int armAbsoluteEncoderPort = 2;
-// Pneumatics
-public static final int pneumaticHubID = 15;
-public static final int batSolenoidID = 7;
-public static final int robSolenoidID = 0;
-// LED Port
-public static final int blinkinLEDPort = 6;
- // Other Constants
-public static final double unitsPerRevolution = 360.0;
-//need to add shufflebaord constant editing
+  // Talon IDs
+  public static final int elevatorCrudeTalonID = 4;
+  public static final int gearboxTalonID = 18;
+  public static final int wristTalonID = 19;
+  public static final int intakeBatmanTalonID = 23;
+  public static final int intakeRobinTalonID = 20;
+  // Controller Ports
+  public static final int operatorControllerPort = 2;
+  // Sensor Ports
+  public static final int bottomLimitSwitchPort = 0;
+  public static final int gearAbsoluteEncoderPort = 1;
+  public static final int armAbsoluteEncoderPort = 2;
+  // Pneumatics
+  public static final int pneumaticHubID = 15;
+  public static final int batSolenoidID = 7;
+  public static final int robSolenoidID = 0;
+  // LED Port
+  public static final int blinkinLEDPort = 6;
+  // Other Constants
+  public static final double unitsPerRevolution = 360.0;
+  // need to add shufflebaord constant editing
   public static final double LIMELIGHT_DEADBAND = 0.005;
   public static final double MIN_STEER_K = 0.05;
   // elevator constants
   public static final int elevatorUpperLimit = 130000;
-  // this is used to set a threshold where the shoulder position needs to be considered
+  // this is used to set a threshold where the shoulder position needs to be
+  // considered
   public static final int elevatorLowerThreshold = 60000;
   // set height for elevator pos 1
   public static final int elevatorTopCone = 129200;
@@ -68,7 +68,7 @@ public static final double unitsPerRevolution = 360.0;
   public static final double maxFF = .03;
   // shoulder encoder
   public static final double shoulderEncoderOffset = 312.02;
-// weird motion magic
+  // weird motion magic
   public static final int kSlotIdx0 = 0;
   public static final int kSlotIdx1 = 1;
   public final int test = 0;
@@ -101,7 +101,7 @@ public static final double unitsPerRevolution = 360.0;
     // public static final double MAX_ACCELERATION = 2;
   }
 
-  public static final class constshoulder { 
+  public static final class constshoulder {
   }
 
   public static final class Drivebase {
