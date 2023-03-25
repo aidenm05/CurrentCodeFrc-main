@@ -5,7 +5,9 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
@@ -85,18 +87,18 @@ public class Robot extends TimedRobot {
     Constants.blinkinLEDPort
   );
   public static final CANSparkMax second = new CANSparkMax(
-    27,
-    MotorType.kBrushed
+    29,
+    MotorType.kBrushless
   );
 
   @Override
   public void robotInit() {
     wrist.configFactoryDefault();
 
-    // _tal.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 20,
-    // 25, 1.0));
-    // _tal.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10,
-    // 15, 0.5));
+    elevator_crude.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 20,
+    25, 1.0));
+    _gearbox.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10,
+    15, 0.5));
 
     // Initialize motor controllers and sensors
     phub.enableCompressorAnalog(80, 100);
@@ -222,16 +224,16 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
+    gearabsolute.setPositionOffset(kDefaultPeriod);
+   armabsolute.setPositionOffset(kDefaultPeriod);
     // Reset wrist absolute encoder and set neutral mode to brake
     wrist.setSelectedSensorPosition(0);
-    wrist.setNeutralMode(NeutralMode.Brake);
 
     // Reset arm and gear absolute encoders
-    armabsolute.reset();
-    armabsolute.getPositionOffset();
-    armabsolute.setPositionOffset(0);
-    gearabsolute.reset();
+    // armabsolute.reset();
+    // armabsolute.getPositionOffset();
+    // armabsolute.setPositionOffset(0);
+    // gearabsolute.reset();
     // gearabsolute.getPositionOffset();
     // gearabsolute.setPositionOffset(0);
   }
@@ -239,7 +241,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // Move arm to target position based on operator input
-    double targetPositionDegrees = 0;
+    double targetPositionDegrees = armabsolute.getAbsolutePosition();
     // Set distance per rotation to 360 degrees for arm absolute encoder
     armabsolute.setDistancePerRotation(360.0);
     // Convert target position in degrees to encoder units
@@ -250,9 +252,9 @@ public class Robot extends TimedRobot {
     // Calculate error between current position and target position
     double error = targetPositionEncoderUnits - armabsolute.get();
     // Calculate output using proportional control
-    double output = error * kP;
+   // double output = error * kP;
     // Set wrist motor to output
-    wrist.set(ControlMode.PercentOutput, output);
+   // wrist.set(ControlMode.PercentOutput, output);
     double currentArmPos = armabsolute.get();
     // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if (_operator.getStartButton()) {
@@ -262,7 +264,7 @@ public class Robot extends TimedRobot {
       timeoutTimer.start();
 
       // Loop until arm absolute encoder reaches 200 or 2 seconds have elapsed
-      while (armabsolute.get() < 200 && timeoutTimer.get() < 1.0) {
+      while (armabsolute.get() < 200 && timeoutTimer.get() < 2.0) {
         wrist.set(ControlMode.PercentOutput, 0.05);
       }
 
@@ -277,7 +279,7 @@ public class Robot extends TimedRobot {
       timeoutTimer.start();
 
       // Loop until gearbox absolute encoder reaches 200 or 2 seconds have elapsed
-      while (gearabsolute.getDistance() < 200 && timeoutTimer.get() < 1.0) {
+      while (gearabsolute.getDistance() < 200 && timeoutTimer.get() < 2.0) {
         _gearbox.set(ControlMode.PercentOutput, 0.5);
       }
 
@@ -303,52 +305,45 @@ public class Robot extends TimedRobot {
     // robsolenoid.set(true);
     // }
 
-    // if (_operator.getXButton()) {
-    // batsolenoid.set(true);
-    // robsolenoid.set(false);
-    // } else if (_operator.getAButton()) {
-    // batsolenoid.set(false);
-    // robsolenoid.set(true);
+    if (_operator.getXButton()) {
+    batsolenoid.set(true);
+    robsolenoid.set(false);
+    } else if (_operator.getYButton()) {
+    batsolenoid.set(false);
+    robsolenoid.set(true);
+    }
+
+    // // Toggle intake solenoids based on operator input
+    // boolean toggle = false;
+
+    // if (_operator.getRawButtonPressed(1)) {
+    //   toggle = !toggle;
     // }
 
-    // Toggle intake solenoids based on operator input
-    boolean toggle = false;
-
-    if (_operator.getRawButtonPressed(XboxController.Button.kY.value)) {
-      toggle = !toggle;
-    }
-
-    if (toggle == true) {
-      batsolenoid.set(true);
-      robsolenoid.set(false);
-    } else {
-      batsolenoid.set(false);
-      robsolenoid.set(true);
-    }
+    // if (toggle == true) {
+    //   batsolenoid.set(true);
+    //   robsolenoid.set(false);
+    // } else {
+    //   batsolenoid.set(false);
+    //   robsolenoid.set(true);
+    // }
     // Control intake motors based on operator input
     if (_operator.getRightBumper()) {
-      intake_batman.set(TalonFXControlMode.PercentOutput, -1);
-      intake_robin.set(TalonFXControlMode.PercentOutput, 1);
-      // second.set(-1);
+      _gearbox.set(TalonFXControlMode.PercentOutput, 1);
     } else if (_operator.getLeftBumper()) {
-      intake_batman.set(TalonFXControlMode.PercentOutput, .2);
-      intake_robin.set(TalonFXControlMode.PercentOutput, -.2);
-      // second.set(1);
+      _gearbox.set(TalonFXControlMode.PercentOutput, -1);
     } else {
-      intake_batman.set(TalonFXControlMode.PercentOutput, 0);
-      intake_robin.set(TalonFXControlMode.PercentOutput, 0);
-      // second.set(0);
+      _gearbox.set(TalonFXControlMode.PercentOutput, 0);
     }
 
     // Control wrist motor based on operator input
     // wrist.set(ControlMode.PercentOutput, _operator.getRawAxis(1) / 3);
     if (Math.abs(_operator.getRawAxis(1)) > 0.1) {
-      wrist.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(1) / 2);
+      wrist.set(TalonFXControlMode.PercentOutput, _operator.getRawAxis(1));
     } else {
-      wrist.set(
-        TalonFXControlMode.Position,
-        elevator_crude.getSelectedSensorPosition(0)
-      );
+      double position = wrist.getSelectedSensorPosition();
+      wrist.set(TalonFXControlMode.PercentOutput,0);
+      wrist.set(TalonFXControlMode.Position, position);
     }
     // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // if (!(_operator.getRawAxis(1) == 0)) {
@@ -360,10 +355,6 @@ public class Robot extends TimedRobot {
 
     // Hold wrist position using last arm absolute position after trigger is
     // released
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // if (_operator.getRawAxis(1) == 0) {
-    // wrist.set(TalonFXControlMode.Position, currentArmPos);
-    // }
     // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // Set elevator motor based on operator input, with limit switch protection
     if (bottomlimit.get()) {
@@ -380,11 +371,19 @@ public class Robot extends TimedRobot {
 
     // Control gearbox motor based on operator input
     if (_operator.getLeftTriggerAxis() > 0.1) {
-      _gearbox.set(ControlMode.PercentOutput, _operator.getLeftTriggerAxis());
+      intake_batman.set(ControlMode.PercentOutput, _operator.getLeftTriggerAxis()/2);
+      intake_robin.set(ControlMode.PercentOutput, -_operator.getLeftTriggerAxis()/2);
+
+      second.set( _operator.getLeftTriggerAxis()/4);
     } else if (_operator.getRightTriggerAxis() > 0.1) {
-      _gearbox.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis());
+      intake_robin.set(ControlMode.PercentOutput, _operator.getRightTriggerAxis()/2);
+      intake_batman.set(ControlMode.PercentOutput, -_operator.getRightTriggerAxis()/2);
+      second.set(- _operator.getRightTriggerAxis()/4);
     } else {
-      _gearbox.set(ControlMode.PercentOutput, 0);
+      intake_batman.set(ControlMode.PercentOutput, 0);
+      intake_robin.set(ControlMode.PercentOutput, 0);
+      second.set(0);
+
     }
 
     // Set LED pattern based on color sensor input
@@ -394,9 +393,10 @@ public class Robot extends TimedRobot {
     } else if (
       ((detectedColor.red > 0.30) && (detectedColor.red < 0.40)) ||
       ((detectedColor.blue > 0.30) && (detectedColor.blue < 0.50))
-    ) {
-      SN_Blinkin.setPattern(PatternType.BPMLavaPalette);
-      toggle = true;
+    ) {  
+       batsolenoid.set(false);
+      robsolenoid.set(true);
+      SN_Blinkin.setPattern(PatternType.Black);
     } else {
       SN_Blinkin.setPattern(PatternType.HotPink);
     }
